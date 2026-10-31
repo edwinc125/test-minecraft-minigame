@@ -16,6 +16,10 @@ public final class MinuteRushCommands {
 		dispatcher.register(Commands.literal("minute-rush")
 			.requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
 			.then(Commands.literal("start").executes(context -> execute(context.getSource(), gameSupplier, "start")))
+			.then(Commands.literal("solo-start")
+				.executes(context -> soloStart(context.getSource(), gameSupplier)))
+			.then(Commands.literal("solo-exit")
+				.executes(context -> execute(context.getSource(), gameSupplier, "solo-exit")))
 			.then(Commands.literal("reset").executes(context -> execute(context.getSource(), gameSupplier, "reset")))
 			.then(Commands.literal("config")
 				.then(Commands.literal("score")
@@ -51,8 +55,22 @@ public final class MinuteRushCommands {
 			source.sendFailure(Component.literal("The server is not ready."));
 			return 0;
 		}
-		String message = action.equals("start") ? game.start() : game.reset("Match reset.");
+		String message = switch (action) {
+			case "start" -> game.start();
+			case "solo-exit" -> game.reset("Singleplayer test mode stopped.");
+			default -> game.reset("Match reset.");
+		};
 		source.sendSuccess(() -> Component.literal(message), true);
+		return 1;
+	}
+
+	private static int soloStart(CommandSourceStack source, Supplier<MinuteRushGame> supplier) {
+		MinuteRushGame game = supplier.get();
+		if (game == null || source.getPlayer() == null) {
+			source.sendFailure(Component.literal("Run this command as a player in a world."));
+			return 0;
+		}
+		source.sendSuccess(() -> Component.literal(game.startSolo(source.getPlayer())), true);
 		return 1;
 	}
 

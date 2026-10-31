@@ -15,6 +15,7 @@ public final class MinuteRushGame {
 	private final MinecraftServer server;
 	private MinuteRushConfig config;
 	private final Map<UUID, Integer> scores = new HashMap<>();
+	private final java.util.Set<UUID> participants = new java.util.HashSet<>();
 	private final Random random = new Random();
 	private MatchState state = MatchState.IDLE;
 	private MinuteRushTask task;
@@ -55,7 +56,7 @@ public final class MinuteRushGame {
 	}
 
 	public void playerLeft(ServerPlayer player) {
-		if (state == MatchState.ROUND_ACTIVE && activePlayers().size() < 2) {
+		if (state == MatchState.ROUND_ACTIVE && participants.remove(player.getUUID()) && activePlayers().isEmpty()) {
 			reset("Not enough players remain; match reset.");
 		}
 	}
@@ -85,23 +86,39 @@ public final class MinuteRushGame {
 		if (activePlayers().size() < 2) {
 			return "At least two players are required to start.";
 		}
+		participants.clear();
+		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+			participants.add(player.getUUID());
+		}
+		return beginMatch("Minute Rush started!");
+	}
+
+	public String startSolo(ServerPlayer player) {
+		participants.clear();
+		participants.add(player.getUUID());
+		return beginMatch("Singleplayer test mode started. Use /minute-rush solo-exit to stop.");
+	}
+
+	private String beginMatch(String message) {
 		scores.replaceAll((id, score) -> 0);
 		state = MatchState.ROUND_ACTIVE;
 		startRound();
-		return "Minute Rush started!";
+		return message;
 	}
 
 	public String reset(String message) {
 		state = MatchState.IDLE;
 		task = null;
 		ticksRemaining = 0;
+		participants.clear();
 		scores.replaceAll((id, score) -> 0);
 		server.getPlayerList().broadcastSystemMessage(Component.literal(message), false);
 		return message;
 	}
 
 	public String status() {
-		return "State: " + state + ", target score: " + config.targetScore() + ", round seconds: " + config.roundDurationSeconds();
+		String mode = participants.size() == 1 ? "singleplayer test" : "multiplayer";
+		return "State: " + state + " (" + mode + "), target score: " + config.targetScore() + ", round seconds: " + config.roundDurationSeconds();
 	}
 
 	private void startRound() {
@@ -125,6 +142,8 @@ public final class MinuteRushGame {
 	}
 
 	private java.util.Collection<ServerPlayer> activePlayers() {
-		return server.getPlayerList().getPlayers();
+		return server.getPlayerList().getPlayers().stream()
+			.filter(player -> participants.contains(player.getUUID()))
+			.toList();
 	}
 }
