@@ -116,6 +116,15 @@ public final class MinuteRushGame {
 		return message;
 	}
 
+	public String skipRound() {
+		if (state != MatchState.ROUND_ACTIVE) {
+			return "No round is active.";
+		}
+		server.getPlayerList().broadcastSystemMessage(Component.literal("Round skipped by operator."), false);
+		startRound();
+		return "Round skipped.";
+	}
+
 	public String status() {
 		String mode = participants.size() == 1 ? "singleplayer test" : "multiplayer";
 		return "State: " + state + " (" + mode + "), target score: " + config.targetScore() + ", round seconds: " + config.roundDurationSeconds();

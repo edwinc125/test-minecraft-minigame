@@ -20,6 +20,8 @@ public final class MinuteRushCommands {
 				.executes(context -> soloStart(context.getSource(), gameSupplier)))
 			.then(Commands.literal("solo-exit")
 				.executes(context -> execute(context.getSource(), gameSupplier, "solo-exit")))
+			.then(Commands.literal("skip")
+				.executes(context -> execute(context.getSource(), gameSupplier, "skip")))
 			.then(Commands.literal("reset").executes(context -> execute(context.getSource(), gameSupplier, "reset")))
 			.then(Commands.literal("config")
 				.then(Commands.literal("score")
@@ -58,6 +60,7 @@ public final class MinuteRushCommands {
 		String message = switch (action) {
 			case "start" -> game.start();
 			case "solo-exit" -> game.reset("Singleplayer test mode stopped.");
+			case "skip" -> game.skipRound();
 			default -> game.reset("Match reset.");
 		};
 		source.sendSuccess(() -> Component.literal(message), true);
