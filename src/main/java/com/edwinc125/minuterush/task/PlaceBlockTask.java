@@ -29,7 +29,7 @@ public final class PlaceBlockTask implements MinuteRushTask {
 
 	@Override
 	public boolean isComplete(ServerPlayer player) {
-		var level = player.serverLevel();
+		var level = player.level();
 		return level.getBlockState(target).is(Blocks.STONE);
 	}
 }

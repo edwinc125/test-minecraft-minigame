@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.permissions.Permissions;
 
 public final class MinuteRushCommands {
 	private MinuteRushCommands() {}
@@ -13,7 +14,7 @@ public final class MinuteRushCommands {
 	public static void register(com.mojang.brigadier.CommandDispatcher<CommandSourceStack> dispatcher,
 			Supplier<MinuteRushGame> gameSupplier) {
 		dispatcher.register(Commands.literal("minute-rush")
-			.requires(source -> source.hasPermission(2))
+			.requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
 			.then(Commands.literal("start").executes(context -> execute(context.getSource(), gameSupplier, "start")))
 			.then(Commands.literal("reset").executes(context -> execute(context.getSource(), gameSupplier, "reset")))
 			.then(Commands.literal("config")
