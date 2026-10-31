@@ -1,11 +1,12 @@
 package com.edwinc125.minuterush.task;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class JumpTask implements MinuteRushTask {
-	private final Set<UUID> jumped = new java.util.HashSet<>();
+	private final Map<UUID, JumpProgress> progress = new HashMap<>();
 
 	@Override
 	public String description() {
@@ -14,15 +15,19 @@ public final class JumpTask implements MinuteRushTask {
 
 	@Override
 	public void begin(ServerPlayer player) {
-		jumped.remove(player.getUUID());
+		UUID id = player.getUUID();
+		progress.put(id, new JumpProgress(player.onGround()));
 		player.sendSystemMessage(net.minecraft.network.chat.Component.literal(description()));
 	}
 
 	@Override
 	public boolean isComplete(ServerPlayer player) {
-		if (player.getDeltaMovement().y > 0.1D || !player.onGround()) {
-			jumped.add(player.getUUID());
+		UUID id = player.getUUID();
+		JumpProgress jumpProgress = progress.get(id);
+		if (jumpProgress == null) {
+			begin(player);
+			jumpProgress = progress.get(id);
 		}
-		return jumped.contains(player.getUUID()) && player.onGround();
+		return jumpProgress.update(player.onGround());
 	}
 }

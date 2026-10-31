@@ -1,12 +1,14 @@
 package com.edwinc125.minuterush.task;
 
+import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 public final class PlaceBlockTask implements MinuteRushTask {
 	private final BlockPos target;
-	private final BlockPos.MutableBlockPos completedBy = new BlockPos.MutableBlockPos();
 
 	public PlaceBlockTask(BlockPos target) {
 		this.target = target.immutable();
@@ -19,7 +21,10 @@ public final class PlaceBlockTask implements MinuteRushTask {
 
 	@Override
 	public void begin(ServerPlayer player) {
-		player.sendSystemMessage(net.minecraft.network.chat.Component.literal(description()));
+		player.sendSystemMessage(Component.literal(description()));
+		if (!player.getInventory().hasAnyOf(Set.of(Blocks.STONE.asItem()))) {
+			player.getInventory().add(new ItemStack(Blocks.STONE.asItem()));
+		}
 	}
 
 	@Override

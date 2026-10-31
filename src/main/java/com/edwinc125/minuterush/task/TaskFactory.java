@@ -11,7 +11,9 @@ public final class TaskFactory {
 	public static MinuteRushTask next(ServerLevel level, Random random) {
 		if (random.nextBoolean()) {
 			BlockPos target = new BlockPos(level.getSharedSpawnPos()).above();
-			level.setBlock(target, Blocks.AIR.defaultBlockState(), 3);
+			if (!level.getBlockState(target).isAir()) {
+				level.setBlock(target, Blocks.AIR.defaultBlockState(), 3);
+			}
 			return new PlaceBlockTask(target);
 		}
 		return new JumpTask();
