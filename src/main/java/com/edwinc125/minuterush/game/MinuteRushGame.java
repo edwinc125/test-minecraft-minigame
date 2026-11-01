@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Set;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +19,7 @@ public final class MinuteRushGame {
 	private MinuteRushConfig config;
 	private final Map<UUID, Integer> scores = new HashMap<>();
 	private final java.util.Set<UUID> participants = new java.util.HashSet<>();
+	private final Deque<String> recentTaskIds = new ArrayDeque<>();
 	private final Random random = new Random();
 	private MatchState state = MatchState.IDLE;
 	private MinuteRushTask task;
@@ -87,6 +91,7 @@ public final class MinuteRushGame {
 			return "At least two players are required to start.";
 		}
 		participants.clear();
+		recentTaskIds.clear();
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			participants.add(player.getUUID());
 		}
@@ -109,6 +114,7 @@ public final class MinuteRushGame {
 	public String reset(String message) {
 		state = MatchState.IDLE;
 		task = null;
+		recentTaskIds.clear();
 		ticksRemaining = 0;
 		participants.clear();
 		scores.replaceAll((id, score) -> 0);
@@ -132,7 +138,12 @@ public final class MinuteRushGame {
 
 	private void startRound() {
 		if (state != MatchState.ROUND_ACTIVE) return;
-		task = TaskFactory.next(server.overworld(), random);
+		TaskFactory.Selection selection = TaskFactory.next(server.overworld(), random, Set.copyOf(recentTaskIds));
+		task = selection.task();
+		recentTaskIds.addLast(selection.id());
+		while (recentTaskIds.size() > 3) {
+			recentTaskIds.removeFirst();
+		}
 		ticksRemaining = config.roundDurationSeconds() * 20;
 		server.getPlayerList().broadcastSystemMessage(Component.literal("New round: " + task.description()), false);
 		for (ServerPlayer player : activePlayers()) task.begin(player);

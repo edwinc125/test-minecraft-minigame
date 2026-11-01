@@ -1,33 +1,29 @@
 package com.edwinc125.minuterush.task;
 
 import java.util.Set;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Block;
 
 public final class PlaceBlockTask implements MinuteRushTask {
-	private final BlockPos target;
-	private final net.minecraft.world.level.block.Block block;
+	private final Block block;
+	private final java.util.Map<java.util.UUID, Integer> baselines = new java.util.HashMap<>();
 
-	public PlaceBlockTask(BlockPos target) {
-		this(target, Blocks.STONE);
-	}
-
-	public PlaceBlockTask(BlockPos target, net.minecraft.world.level.block.Block block) {
-		this.target = target.immutable();
+	public PlaceBlockTask(Block block) {
 		this.block = block;
 	}
 
 	@Override
 	public String description() {
-		return "Place a " + block.toString() + " at " + target.toShortString();
+		return "Place a " + block.toString() + " anywhere";
 	}
 
 	@Override
 	public void begin(ServerPlayer player) {
 		player.sendSystemMessage(Component.literal(description()));
+		baselines.put(player.getUUID(), player.getStats().getValue(Stats.ITEM_USED, block.asItem()));
 		if (!player.getInventory().hasAnyOf(Set.of(block.asItem()))) {
 			player.getInventory().add(new ItemStack(block.asItem()));
 		}
@@ -35,7 +31,7 @@ public final class PlaceBlockTask implements MinuteRushTask {
 
 	@Override
 	public boolean isComplete(ServerPlayer player) {
-		var level = player.level();
-		return level.getBlockState(target).is(block);
+		int baseline = baselines.getOrDefault(player.getUUID(), 0);
+		return player.getStats().getValue(Stats.ITEM_USED, block.asItem()) > baseline;
 	}
 }
