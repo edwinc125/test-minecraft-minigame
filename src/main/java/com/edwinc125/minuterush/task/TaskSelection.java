@@ -19,4 +19,8 @@ public final class TaskSelection {
 		} while (recent.contains(candidate));
 		return candidate;
 	}
+
+	public static boolean isRecent(String id, Set<String> recent) {
+		return recent.contains(id);
+	}
 }

@@ -19,7 +19,7 @@ Operators can use:
 - `/minute-rush config score <value>` - set the winning score
 - `/minute-rush config duration <seconds>` - set the round timeout
 
-The task catalog now covers placing, collecting, mining, jumping, and traveling. The game avoids the previous three task kinds when the pool has alternatives, so the same task family does not repeat immediately. Placement tasks no longer require coordinates: place the requested block anywhere, and the game detects the placement from your item-use stat. Tasks use per-player baselines so pre-existing inventory/stat progress does not falsely complete a round. Settings default to 10 points and 60 seconds and can be changed with the config commands.
+The task catalog now covers placing, collecting, mining, jumping, traveling, sprinting, repeated jumps, and hold-item actions. The game avoids the previous three task kinds when the pool has alternatives, so the same task family does not repeat immediately. Placement tasks no longer require coordinates: place the requested block anywhere, and the game detects the placement from your item-use stat. Tasks use per-player baselines so pre-existing inventory/stat progress does not falsely complete a round. Settings default to 10 points and 60 seconds and can be changed with the config commands.
 
 Singleplayer testing is explicit and does not change normal multiplayer rules. Run `/minute-rush solo-start` as the player, test the tasks normally, and use `/minute-rush solo-exit` to stop. A regular `/minute-rush start` still requires at least two players.
 
