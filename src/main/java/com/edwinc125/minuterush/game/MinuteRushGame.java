@@ -36,6 +36,7 @@ public final class MinuteRushGame {
 	private final Map<UUID, Integer> scores = new HashMap<>();
 	private final java.util.Set<UUID> participants = new java.util.HashSet<>();
 	private final Deque<String> recentTaskIds = new ArrayDeque<>();
+	private final Map<UUID, String> previousStandingBlocks = new HashMap<>();
 	private final Random random = new Random();
 	private MatchState state = MatchState.IDLE;
 	private MinuteRushTask task;
@@ -121,6 +122,7 @@ public final class MinuteRushGame {
 		}
 		updatePresentation();
 		for (ServerPlayer player : activePlayers()) {
+			trackStandingBlock(player);
 			if (task.isComplete(player)) {
 				winRound(player);
 				return;
@@ -200,6 +202,9 @@ public final class MinuteRushGame {
 		title("NEW TASK", task.description());
 		playSound(SoundEvents.NOTE_BLOCK_PLING.value(), 1.0f, 1.2f);
 		for (ServerPlayer player : activePlayers()) task.begin(player);
+		for (ServerPlayer player : activePlayers()) {
+			previousStandingBlocks.put(player.getUUID(), standingBlock(player));
+		}
 		ScoreboardDisplay.refresh(server, this);
 		updatePresentation();
 	}
@@ -215,10 +220,25 @@ public final class MinuteRushGame {
 	public void blockUsed(ServerPlayer player, net.minecraft.core.BlockPos pos) {
 		if (state == MatchState.ROUND_ACTIVE && task instanceof com.edwinc125.minuterush.task.InteractionTask interaction) {
 			String block = BuiltInRegistries.BLOCK.getKey(player.level().getBlockState(pos).getBlock()).getPath();
-			if (isInteractableBlock(block)) {
+			if (isInteractableBlock(block) || interaction.accepts(block)) {
 				interaction.record(player, block);
 			}
 		}
+	}
+
+	private void trackStandingBlock(ServerPlayer player) {
+		String current = standingBlock(player);
+		String previous = previousStandingBlocks.put(player.getUUID(), current);
+		if (state == MatchState.ROUND_ACTIVE
+				&& task instanceof com.edwinc125.minuterush.task.InteractionTask interaction
+				&& interaction.accepts(current)
+				&& (previous == null || !interaction.accepts(previous))) {
+			interaction.record(player, current);
+		}
+	}
+
+	private static String standingBlock(ServerPlayer player) {
+		return BuiltInRegistries.BLOCK.getKey(player.level().getBlockState(player.getOnPos()).getBlock()).getPath();
 	}
 
 	private static boolean isInteractableBlock(String block) {
@@ -278,11 +298,11 @@ public final class MinuteRushGame {
 		server.getPlayerList().broadcastSystemMessage(Component.literal(winnerName + " wins the round! (" + newScore + "/" + config.targetScore() + ")"), false);
 		title(winnerName + " wins!", "Round score: " + newScore + "/" + config.targetScore());
 		playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 1.0f, 1.4f);
-		playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
+		playSound(SoundEvents.PLAYER_LEVELUP, 1.0f, 1.0f);
 		ScoreboardDisplay.refresh(server, this);
 		if (newScore >= config.targetScore()) {
 			state = MatchState.MATCH_OVER;
-			playSound(SoundEvents.PLAYER_LEVELUP, 1.0f, 1.0f);
+			playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
 			bossbar.setVisible(false);
 			server.getPlayerList().broadcastSystemMessage(Component.literal(winner.getGameProfile().name() + " wins the match! Use /minute-rush start to play again."), false);
 		} else {

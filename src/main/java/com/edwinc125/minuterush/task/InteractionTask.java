@@ -22,10 +22,22 @@ public final class InteractionTask implements MinuteRushTask {
 
 	@Override
 	public String description() {
+		if (kind == Kind.BLOCK) {
+			return switch (target) {
+				case "chest" -> "Open a chest";
+				case "barrel" -> "Open a barrel";
+				case "furnace" -> "Open a furnace";
+				case "crafting_table" -> "Open a crafting table";
+				case "button" -> "Press a button";
+				case "lever" -> "Pull a lever";
+				case "pressure_plate" -> "Step on a pressure plate";
+				default -> "Interact with " + ("any-block".equals(target) ? "an interactable block" : "a " + target);
+			};
+		}
 		return switch (kind) {
 			case PLAYER -> "Use or hit another player";
 			case MOB -> "Use or hit " + ("any-mob".equals(target) ? "any mob" : "a " + target);
-			case BLOCK -> "Interact with " + ("any-block".equals(target) ? "an interactable block" : "a " + target);
+			case BLOCK -> "Interact with " + target;
 		};
 	}
 
@@ -44,7 +56,19 @@ public final class InteractionTask implements MinuteRushTask {
 	public boolean accepts(String targetId) {
 		return (kind == Kind.PLAYER && "player".equals(targetId))
 			|| (kind == Kind.MOB && ("any-mob".equals(target) || target.equals(targetId)))
-			|| (kind == Kind.BLOCK && ("any-block".equals(target) || target.equals(targetId)));
+			|| (kind == Kind.BLOCK && acceptsBlock(targetId));
+	}
+
+	private boolean acceptsBlock(String targetId) {
+		if ("any-block".equals(target)) {
+			return true;
+		}
+		return switch (target) {
+			case "chest" -> "chest".equals(targetId) || "trapped_chest".equals(targetId);
+			case "button" -> targetId.endsWith("_button");
+			case "pressure_plate" -> targetId.endsWith("_pressure_plate");
+			default -> target.equals(targetId);
+		};
 	}
 
 	@Override

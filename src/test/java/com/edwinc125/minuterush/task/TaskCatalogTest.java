@@ -9,4 +9,5 @@ class TaskCatalogTest {
 	void recentTaskIdsAreRecognizedByTheSelectionPool() {
 		assertTrue(TaskSelection.isRecent("hold-tool", Set.of("hold-tool")));
 	}
+
 }
