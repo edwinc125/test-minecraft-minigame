@@ -4,11 +4,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.stats.Stats;
 
 public final class CollectItemTask implements MinuteRushTask {
 	private final Item item;
 	private final int count;
 	private final java.util.Map<java.util.UUID, Integer> baselines = new java.util.HashMap<>();
+	private final java.util.Map<java.util.UUID, Integer> pickupBaselines = new java.util.HashMap<>();
 
 	public CollectItemTask(Item item, int count) {
 		this.item = item;
@@ -24,6 +26,7 @@ public final class CollectItemTask implements MinuteRushTask {
 	public void begin(ServerPlayer player) {
 		player.sendSystemMessage(Component.literal(description()));
 		baselines.put(player.getUUID(), player.getInventory().countItem(item));
+		pickupBaselines.put(player.getUUID(), player.getStats().getValue(Stats.ITEM_PICKED_UP, item));
 		if (count > 1) {
 			player.getInventory().add(new ItemStack(item, count - 1));
 		}
@@ -31,7 +34,9 @@ public final class CollectItemTask implements MinuteRushTask {
 
 	@Override
 	public boolean isComplete(ServerPlayer player) {
-		return player.getInventory().countItem(item) >= CollectProgress.requiredTotal(
-			baselines.getOrDefault(player.getUUID(), 0), count);
+		int inventoryDelta = player.getInventory().countItem(item) - baselines.getOrDefault(player.getUUID(), 0);
+		int pickupDelta = player.getStats().getValue(Stats.ITEM_PICKED_UP, item)
+			- pickupBaselines.getOrDefault(player.getUUID(), 0);
+		return inventoryDelta >= count || pickupDelta >= count;
 	}
 }

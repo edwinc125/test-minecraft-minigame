@@ -17,8 +17,16 @@ public final class TaskFactory {
 	}
 
 	public static Selection next(ServerLevel level, Random random, Set<String> recent) {
-		int kind = TaskSelection.chooseIndex(random, 9,
+		return next(level, random, recent, true);
+	}
+
+	public static Selection next(ServerLevel level, Random random, Set<String> recent, boolean allowPlayerInteraction) {
+		int poolSize = allowPlayerInteraction ? 12 : 11;
+		int kind = TaskSelection.chooseIndex(random, poolSize,
 			recent.stream().map(TaskFactory::indexOf).filter(index -> index >= 0).collect(java.util.stream.Collectors.toSet()));
+		if (!allowPlayerInteraction && kind >= 9) {
+			kind++;
+		}
 		if (kind == 0) {
 			Block block = random.nextBoolean() ? Blocks.STONE : Blocks.TORCH;
 			return new Selection("place", new PlaceBlockTask(block));
@@ -51,7 +59,16 @@ public final class TaskFactory {
 					|| stack.is(Items.GOLDEN_PICKAXE) || stack.is(Items.DIAMOND_PICKAXE)
 					|| stack.is(Items.NETHERITE_PICKAXE)));
 		}
-		return new Selection("hold-torch", new HoldItemTask("Hold a torch", stack -> stack.is(Items.TORCH)));
+		if (kind == 8) {
+			return new Selection("hold-torch", new HoldItemTask("Hold a torch", stack -> stack.is(Items.TORCH)));
+		}
+		if (kind == 9) {
+			return new Selection("interact-player", new InteractionTask(InteractionTask.Kind.PLAYER, "player", 1));
+		}
+		if (kind == 10) {
+			return new Selection("interact-mob", new InteractionTask(InteractionTask.Kind.MOB, "any-mob", 1));
+		}
+		return new Selection("interact-block", new InteractionTask(InteractionTask.Kind.BLOCK, "any-block", 1));
 	}
 
 	private static int indexOf(String id) {
@@ -65,6 +82,9 @@ public final class TaskFactory {
 			case "jump-count" -> 6;
 			case "hold-tool" -> 7;
 			case "hold-torch" -> 8;
+			case "interact-player" -> 9;
+			case "interact-mob" -> 10;
+			case "interact-block" -> 11;
 			default -> -1;
 		};
 	}
