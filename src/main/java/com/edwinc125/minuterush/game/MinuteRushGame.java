@@ -17,6 +17,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.world.BossEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
@@ -242,8 +245,11 @@ public final class MinuteRushGame {
 	}
 
 	private void playSound(net.minecraft.sounds.SoundEvent sound, float volume, float pitch) {
+		Holder<net.minecraft.sounds.SoundEvent> holder = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound);
 		for (ServerPlayer player : activePlayers()) {
-			player.playSound(sound, volume, pitch);
+			player.connection.send(new ClientboundSoundPacket(
+				holder, SoundSource.MASTER, player.getX(), player.getY(), player.getZ(),
+				volume, pitch, random.nextLong()));
 		}
 	}
 
