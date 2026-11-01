@@ -21,12 +21,13 @@ public final class TaskFactory {
 	}
 
 	public static Selection next(ServerLevel level, Random random, Set<String> recent, boolean allowPlayerInteraction) {
-		int poolSize = allowPlayerInteraction ? 12 : 11;
-		int kind = TaskSelection.chooseIndex(random, poolSize,
+		int poolSize = 18;
+		java.util.Set<Integer> excluded = new java.util.HashSet<>(
 			recent.stream().map(TaskFactory::indexOf).filter(index -> index >= 0).collect(java.util.stream.Collectors.toSet()));
-		if (!allowPlayerInteraction && kind >= 9) {
-			kind++;
+		if (!allowPlayerInteraction) {
+			excluded.add(9);
 		}
+		int kind = TaskSelection.chooseIndex(random, poolSize, excluded);
 		if (kind == 0) {
 			Block block = random.nextBoolean() ? Blocks.STONE : Blocks.TORCH;
 			return new Selection("place", new PlaceBlockTask(block));
@@ -68,7 +69,29 @@ public final class TaskFactory {
 		if (kind == 10) {
 			return new Selection("interact-mob", new InteractionTask(InteractionTask.Kind.MOB, "any-mob", 1));
 		}
-		return new Selection("interact-block", new InteractionTask(InteractionTask.Kind.BLOCK, "any-block", 1));
+		if (kind == 11) {
+			return new Selection("interact-block", new InteractionTask(InteractionTask.Kind.BLOCK, "any-block", 1));
+		}
+		if (kind == 12) {
+			return new Selection("travel-far", new TravelTask(16));
+		}
+		if (kind == 13) {
+			return new Selection("walk", new StatTask("Walk 20 blocks", 2000,
+				player -> player.getStats().getValue(Stats.CUSTOM, Stats.WALK_ONE_CM)));
+		}
+		if (kind == 14) {
+			return new Selection("swim", new StatTask("Swim 5 blocks", 500,
+				player -> player.getStats().getValue(Stats.CUSTOM, Stats.SWIM_ONE_CM)));
+		}
+		if (kind == 15) {
+			return new Selection("place-torch", new PlaceBlockTask(Blocks.TORCH));
+		}
+		if (kind == 16) {
+			return new Selection("collect-apple", new CollectItemTask(Items.APPLE, 2));
+		}
+		BlockPos target = level.getServer().getRespawnData().pos().below(2);
+		level.setBlock(target, Blocks.DIRT.defaultBlockState(), 3);
+		return new Selection("dig-dirt", new DigBlockTask(Blocks.DIRT, target));
 	}
 
 	private static int indexOf(String id) {
@@ -85,6 +108,12 @@ public final class TaskFactory {
 			case "interact-player" -> 9;
 			case "interact-mob" -> 10;
 			case "interact-block" -> 11;
+			case "travel-far" -> 12;
+			case "walk" -> 13;
+			case "swim" -> 14;
+			case "place-torch" -> 15;
+			case "collect-apple" -> 16;
+			case "dig-dirt" -> 17;
 			default -> -1;
 		};
 	}

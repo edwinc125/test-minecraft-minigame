@@ -22,7 +22,7 @@ public final class TravelTask implements MinuteRushTask {
 	@Override
 	public void begin(ServerPlayer player) {
 		starts.put(player.getUUID(), new double[] {player.getX(), player.getZ()});
-		player.sendSystemMessage(Component.literal(description()));
+		player.sendSystemMessage(Component.literal(description()).withStyle(net.minecraft.ChatFormatting.BLUE));
 	}
 
 	@Override

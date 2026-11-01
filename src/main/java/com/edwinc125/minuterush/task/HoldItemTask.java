@@ -21,7 +21,7 @@ public final class HoldItemTask implements MinuteRushTask {
 
 	@Override
 	public void begin(ServerPlayer player) {
-		player.sendSystemMessage(Component.literal(prompt));
+		player.sendSystemMessage(Component.literal(prompt).withStyle(net.minecraft.ChatFormatting.GREEN));
 	}
 
 	@Override

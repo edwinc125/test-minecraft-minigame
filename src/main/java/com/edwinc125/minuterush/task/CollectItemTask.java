@@ -19,12 +19,12 @@ public final class CollectItemTask implements MinuteRushTask {
 
 	@Override
 	public String description() {
-		return "Collect " + count + " " + item.toString();
+		return "Collect " + count + " " + TaskText.itemName(item).toLowerCase(java.util.Locale.ROOT);
 	}
 
 	@Override
 	public void begin(ServerPlayer player) {
-		player.sendSystemMessage(Component.literal(description()));
+		player.sendSystemMessage(Component.literal(description()).withStyle(net.minecraft.ChatFormatting.GOLD));
 		baselines.put(player.getUUID(), player.getInventory().countItem(item));
 		pickupBaselines.put(player.getUUID(), player.getStats().getValue(Stats.ITEM_PICKED_UP, item));
 		if (count > 1) {

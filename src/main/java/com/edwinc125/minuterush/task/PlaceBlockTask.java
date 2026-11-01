@@ -17,12 +17,12 @@ public final class PlaceBlockTask implements MinuteRushTask {
 
 	@Override
 	public String description() {
-		return "Place a " + block.toString() + " anywhere";
+		return "Place a " + TaskText.blockName(block).toLowerCase(java.util.Locale.ROOT) + " anywhere";
 	}
 
 	@Override
 	public void begin(ServerPlayer player) {
-		player.sendSystemMessage(Component.literal(description()));
+		player.sendSystemMessage(Component.literal(description()).withStyle(net.minecraft.ChatFormatting.AQUA));
 		baselines.put(player.getUUID(), player.getStats().getValue(Stats.ITEM_USED, block.asItem()));
 		if (!player.getInventory().hasAnyOf(Set.of(block.asItem()))) {
 			player.getInventory().add(new ItemStack(block.asItem()));

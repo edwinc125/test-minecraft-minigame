@@ -20,13 +20,13 @@ public final class DigBlockTask implements MinuteRushTask {
 
 	@Override
 	public String description() {
-		return "Mine " + block.toString();
+		return "Mine a " + TaskText.blockName(block).toLowerCase(java.util.Locale.ROOT);
 	}
 
 	@Override
 	public void begin(ServerPlayer player) {
 		baselines.put(player.getUUID(), player.getStats().getValue(Stats.BLOCK_MINED, block));
-		player.sendSystemMessage(Component.literal(description()));
+		player.sendSystemMessage(Component.literal(description()).withStyle(net.minecraft.ChatFormatting.AQUA));
 		player.getInventory().add(new ItemStack(Items.WOODEN_PICKAXE));
 	}
 

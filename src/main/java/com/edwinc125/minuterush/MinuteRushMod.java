@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 public final class MinuteRushMod implements ModInitializer {
@@ -45,6 +46,13 @@ public final class MinuteRushMod implements ModInitializer {
 			return InteractionResult.PASS;
 		});
 		UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+			if (game != null && !world.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+				game.entityUsed(serverPlayer, entity instanceof ServerPlayer ? "player"
+					: BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath());
+			}
+			return InteractionResult.PASS;
+		});
+		AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
 			if (game != null && !world.isClientSide() && player instanceof ServerPlayer serverPlayer) {
 				game.entityUsed(serverPlayer, entity instanceof ServerPlayer ? "player"
 					: BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath());

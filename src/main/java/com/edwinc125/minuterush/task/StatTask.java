@@ -27,7 +27,7 @@ public final class StatTask implements MinuteRushTask {
 	@Override
 	public void begin(ServerPlayer player) {
 		baselines.put(player.getUUID(), value.applyAsInt(player));
-		player.sendSystemMessage(Component.literal(prompt));
+		player.sendSystemMessage(Component.literal(prompt).withStyle(net.minecraft.ChatFormatting.YELLOW));
 	}
 
 	@Override

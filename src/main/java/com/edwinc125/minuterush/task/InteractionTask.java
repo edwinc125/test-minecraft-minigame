@@ -23,8 +23,8 @@ public final class InteractionTask implements MinuteRushTask {
 	@Override
 	public String description() {
 		return switch (kind) {
-			case PLAYER -> "Interact with another player";
-			case MOB -> "Interact with a " + target;
+			case PLAYER -> "Use or hit another player";
+			case MOB -> "Use or hit " + ("any-mob".equals(target) ? "any mob" : "a " + target);
 			case BLOCK -> "Interact with " + ("any-block".equals(target) ? "an interactable block" : "a " + target);
 		};
 	}
@@ -32,7 +32,7 @@ public final class InteractionTask implements MinuteRushTask {
 	@Override
 	public void begin(ServerPlayer player) {
 		progress.put(player.getUUID(), 0);
-		player.sendSystemMessage(Component.literal(description()));
+		player.sendSystemMessage(Component.literal(description()).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
 	}
 
 	public void record(ServerPlayer player, String targetId) {
