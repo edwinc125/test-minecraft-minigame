@@ -2,6 +2,7 @@ package com.edwinc125.minuterush.task;
 
 import java.util.Set;
 import java.util.random.RandomGenerator;
+import java.util.List;
 
 public final class TaskSelection {
 	private TaskSelection() {}
@@ -22,5 +23,24 @@ public final class TaskSelection {
 
 	public static boolean isRecent(String id, Set<String> recent) {
 		return recent.contains(id);
+	}
+
+	public static <T extends Weighted> T chooseWeighted(RandomGenerator random, List<T> candidates) {
+		if (candidates.isEmpty()) {
+			throw new IllegalArgumentException("Weighted pool must not be empty");
+		}
+		double total = candidates.stream().mapToDouble(Weighted::weight).sum();
+		double pick = random.nextDouble(total);
+		for (T candidate : candidates) {
+			pick -= candidate.weight();
+			if (pick < 0) {
+				return candidate;
+			}
+		}
+		return candidates.get(candidates.size() - 1);
+	}
+
+	public interface Weighted {
+		double weight();
 	}
 }

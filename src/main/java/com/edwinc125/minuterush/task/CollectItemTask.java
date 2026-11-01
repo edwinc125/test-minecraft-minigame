@@ -3,7 +3,6 @@ package com.edwinc125.minuterush.task;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.stats.Stats;
 
 public final class CollectItemTask implements MinuteRushTask {
@@ -27,9 +26,6 @@ public final class CollectItemTask implements MinuteRushTask {
 		player.sendSystemMessage(Component.literal(description()).withStyle(net.minecraft.ChatFormatting.GOLD));
 		baselines.put(player.getUUID(), player.getInventory().countItem(item));
 		pickupBaselines.put(player.getUUID(), player.getStats().getValue(Stats.ITEM_PICKED_UP, item));
-		if (count > 1) {
-			player.getInventory().add(new ItemStack(item, count - 1));
-		}
 	}
 
 	@Override

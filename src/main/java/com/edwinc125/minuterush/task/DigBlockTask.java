@@ -4,8 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 
 public final class DigBlockTask implements MinuteRushTask {
@@ -27,7 +25,6 @@ public final class DigBlockTask implements MinuteRushTask {
 	public void begin(ServerPlayer player) {
 		baselines.put(player.getUUID(), player.getStats().getValue(Stats.BLOCK_MINED, block));
 		player.sendSystemMessage(Component.literal(description()).withStyle(net.minecraft.ChatFormatting.AQUA));
-		player.getInventory().add(new ItemStack(Items.WOODEN_PICKAXE));
 	}
 
 	@Override
